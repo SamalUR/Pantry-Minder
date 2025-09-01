@@ -42,6 +42,7 @@ dependencies {
     implementation(libs.credentials)
     implementation(libs.credentials.play.services.auth)
     implementation(libs.googleid)
+    implementation(libs.recyclerview)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
@@ -51,5 +52,7 @@ dependencies {
     implementation("com.google.android.gms:play-services-base:18.5.0")
     implementation("com.google.firebase:firebase-auth:22.5.0")
     implementation("com.google.android.material:material:1.12.0")
+    implementation("com.google.android.material:material:1.9.0")
+    implementation("com.google.firebase:firebase-firestore:24.9.0")
 
 }

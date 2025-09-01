@@ -14,6 +14,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.PantryMinder">
         <activity
+            android:name=".EditItemActivity"
+            android:exported="false" />
+        <activity
+            android:name=".AddItemActivity"
+            android:exported="false" />
+        <activity
+            android:name=".PantryDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".PantryListActivity"
             android:exported="false" />
         <activity

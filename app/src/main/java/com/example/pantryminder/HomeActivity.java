@@ -28,6 +28,7 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.Timestamp;
 
@@ -151,38 +152,58 @@ public class HomeActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private ListenerRegistration userListener;
+    private final List<ListenerRegistration> pantryListeners = new ArrayList<>();
+
     private void loadUserPantries() {
+        // Clear old listeners if already active
+        if (userListener != null) userListener.remove();
+        for (ListenerRegistration l : pantryListeners) l.remove();
+        pantryListeners.clear();
+
         DocumentReference userRef = db.collection("Users").document(userId);
-        userRef.get().addOnSuccessListener(documentSnapshot -> {
-            if (documentSnapshot.exists()) {
+
+        userListener = userRef.addSnapshotListener((documentSnapshot, e) -> {
+            if (e != null) {
+                Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (documentSnapshot != null && documentSnapshot.exists()) {
                 List<String> pantryIds = (List<String>) documentSnapshot.get("pantries");
+
+                userPantries.clear();
+
                 if (pantryIds != null && !pantryIds.isEmpty()) {
-                    List<Task<DocumentSnapshot>> tasks = new ArrayList<>();
                     for (String pantryId : pantryIds) {
-                        Task<DocumentSnapshot> task = db.collection("Pantries").document(pantryId).get();
-                        tasks.add(task);
+                        ListenerRegistration reg = db.collection("Pantries")
+                                .document(pantryId)
+                                .addSnapshotListener((doc, err) -> {
+                                    if (err != null) return;
+                                    if (doc != null && doc.exists()) {
+                                        String name = doc.getString("name");
+
+                                        // Remove old pantry with same id
+                                        for (int i = 0; i < userPantries.size(); i++) {
+                                            if (userPantries.get(i).getId().equals(doc.getId())) {
+                                                userPantries.set(i, new Pantry(doc.getId(), name));
+                                                updateSpinner();
+                                                return;
+                                            }
+                                        }
+                                        // Add new pantry
+                                        userPantries.add(new Pantry(doc.getId(), name));
+                                        updateSpinner();
+                                    }
+                                });
+                        pantryListeners.add(reg);
                     }
-                    Tasks.whenAllSuccess(tasks).addOnSuccessListener(results -> {
-                        userPantries.clear();
-                        for (Object obj : results) {
-                            DocumentSnapshot doc = (DocumentSnapshot) obj;
-                            if (doc.exists()) {
-                                String name = doc.getString("name");
-                                userPantries.add(new Pantry(doc.getId(), name));
-                            }
-                        }
-                        updateSpinner();
-                    }).addOnFailureListener(e -> {
-                        Toast.makeText(this, "Failed to load pantries", Toast.LENGTH_SHORT).show();
-                    });
                 } else {
-                    updateSpinner(); // Empty list, just show "All" (though no data)
+                    updateSpinner(); // no pantries
                 }
             }
-        }).addOnFailureListener(e -> {
-            Toast.makeText(this, "Failed to load user data", Toast.LENGTH_SHORT).show();
         });
     }
+
 
     private void updateSpinner() {
         spinnerItems.clear();
