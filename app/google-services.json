@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "421716185317",
+    "project_id": "pantryminder-5bb0beb8",
+    "storage_bucket": "pantryminder-5bb0beb8.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:421716185317:android:ddfb81cbedd0645847440c",
+        "android_client_info": {
+          "package_name": "com.example.pantryminder"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAS9FNKppFNQEpYAdxy4LzFoWMmgeUqE8o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
