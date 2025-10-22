@@ -50,9 +50,19 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore:26.0.0")
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("com.google.android.gms:play-services-base:18.5.0")
-    implementation("com.google.firebase:firebase-auth:22.5.0")
+    implementation("com.google.firebase:firebase-auth:23.1.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("com.google.android.material:material:1.9.0")
-    implementation("com.google.firebase:firebase-firestore:24.9.0")
+    implementation("com.google.firebase:firebase-firestore:25.1.1")
+    implementation("com.google.firebase:firebase-messaging:24.0.3")
+    implementation("androidx.work:work-runtime:2.9.1")
+    implementation("com.google.guava:guava:33.0.0-android")
+    implementation("com.google.android.material:material:1.12.0")
+    implementation("androidx.cardview:cardview:1.0.0")
+
+
+
+
+
 
 }

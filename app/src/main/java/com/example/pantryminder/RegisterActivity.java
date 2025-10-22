@@ -11,6 +11,11 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FirebaseFirestore;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class RegisterActivity extends AppCompatActivity {
 
@@ -24,10 +29,8 @@ public class RegisterActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
 
-        // Initialize Firebase Auth
         mAuth = FirebaseAuth.getInstance();
 
-        // Initialize UI components
         nameEditText = findViewById(R.id.nameEditText);
         emailEditText = findViewById(R.id.emailEditText);
         passwordEditText = findViewById(R.id.passwordEditText);
@@ -35,7 +38,6 @@ public class RegisterActivity extends AppCompatActivity {
         registerButton = findViewById(R.id.registerButton);
         progressBar = findViewById(R.id.progressBar);
 
-        // Register button click listener
         registerButton.setOnClickListener(v -> {
             String name = nameEditText.getText().toString().trim();
             String email = emailEditText.getText().toString().trim();
@@ -69,7 +71,6 @@ public class RegisterActivity extends AppCompatActivity {
 
             progressBar.setVisibility(View.VISIBLE);
 
-            // Create user with Firebase
             mAuth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(task -> {
                         progressBar.setVisibility(View.GONE);
@@ -81,7 +82,29 @@ public class RegisterActivity extends AppCompatActivity {
                             Toast.makeText(RegisterActivity.this, "Registration failed: "
                                     + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                         }
+
+                        if (task.isSuccessful()) {
+                            String userId = mAuth.getCurrentUser().getUid();
+
+                            Map<String, Object> userData = new HashMap<>();
+                            userData.put("name", name);
+                            userData.put("email", email);
+                            userData.put("pantries", new ArrayList<>());
+
+                            FirebaseFirestore.getInstance().collection("Users").document(userId)
+                                    .set(userData)
+                                    .addOnSuccessListener(aVoid -> {
+                                        Toast.makeText(RegisterActivity.this, "Account created!", Toast.LENGTH_SHORT).show();
+                                        startActivity(new Intent(RegisterActivity.this, HomeActivity.class));
+                                        finish();
+                                    })
+                                    .addOnFailureListener(e ->
+                                            Toast.makeText(RegisterActivity.this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show()
+                                    );
+                        }
+
                     });
+
         });
     }
 }

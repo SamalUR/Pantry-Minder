@@ -3,17 +3,15 @@ package com.example.pantryminder;
 import com.google.firebase.Timestamp;
 
 public class Item {
-    private String id; // Add ID field for Firestore document ID
+    private String id;
     private String name;
     private String category;
     private int quantity;
     private String unit;
     private Timestamp expiryDate;
 
-    // Default constructor required for Firestore
     public Item() {}
 
-    // Getters and Setters
     public String getId() {
         return id;
     }

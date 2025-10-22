@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.example.pantryminder" />
-                  <option name="mobileSdkAppId" value="1:421716185317:android:ddfb81cbedd0645847440c" />
-                  <option name="projectId" value="pantryminder-5bb0beb8" />
-                  <option name="projectNumber" value="421716185317" />
+                  <option name="mobileSdkAppId" value="1:865791147095:android:6e89f5a66e0d7ddab53712" />
+                  <option name="projectId" value="pantryminder-24c77" />
+                  <option name="projectNumber" value="865791147095" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

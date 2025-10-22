@@ -1,41 +1,36 @@
 package com.example.pantryminder;
 
-import android.content.ClipData;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
-import androidx.drawerlayout.widget.DrawerLayout;
-import androidx.appcompat.app.ActionBarDrawerToggle;
-import com.google.android.material.navigation.NavigationView;
-import android.view.MenuItem;
-import androidx.appcompat.widget.Toolbar;
-
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
+import com.google.android.material.navigation.NavigationView;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
-import com.google.firebase.firestore.QuerySnapshot;
-import com.google.firebase.Timestamp;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
-import com.example.pantryminder.Item;
 
 public class HomeActivity extends AppCompatActivity {
 
@@ -46,7 +41,7 @@ public class HomeActivity extends AppCompatActivity {
     private ExpiryItemAdapter adapter;
 
     private DrawerLayout drawerLayout;
-    private ActionBarDrawerToggle toggle;
+    private androidx.appcompat.app.ActionBarDrawerToggle toggle;
     private NavigationView navigationView;
 
     private FirebaseFirestore db;
@@ -55,111 +50,93 @@ public class HomeActivity extends AppCompatActivity {
 
     private List<Pantry> userPantries = new ArrayList<>();
     private List<String> spinnerItems = new ArrayList<>();
+    private ListenerRegistration userListener;
+    private final List<ListenerRegistration> pantryListeners = new ArrayList<>();
+    private final List<ListenerRegistration> itemListeners = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
 
-        // Initialize Firebase
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         FirebaseUser currentUser = mAuth.getCurrentUser();
         if (currentUser == null) {
-            Log.e("HomeActivity", "No authenticated user found, redirecting to login");
             Toast.makeText(this, "Please log in again", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(this, LoginActivity.class));
             finish();
             return;
         }
+        userId = currentUser.getUid();
 
-        userId = mAuth.getCurrentUser().getUid();
-
-        // Initialize UI
         pantrySpinner = findViewById(R.id.pantrySpinner);
         expiringSoonText = findViewById(R.id.expiringSoonText);
         totalItemsText = findViewById(R.id.totalItemsText);
         expiringItemsRecycler = findViewById(R.id.expiringItemsRecycler);
 
-        if (pantrySpinner == null || expiringSoonText == null || totalItemsText == null || expiringItemsRecycler == null) {
-            Log.e("HomeActivity", "One or more UI elements not found in layout");
-            Toast.makeText(this, "UI initialization failed", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-        // Set up Toolbar
-        Toolbar toolbar = findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        if (getSupportActionBar() == null) {
-            Log.e("HomeActivity", "SupportActionBar is null after setting Toolbar");
-            Toast.makeText(this, "App bar initialization failed", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
-
-        drawerLayout = findViewById(R.id.drawer_layout);
-        navigationView = findViewById(R.id.nav_view);
-
         expiringItemsRecycler.setLayoutManager(new LinearLayoutManager(this));
         adapter = new ExpiryItemAdapter(new ArrayList<>());
         expiringItemsRecycler.setAdapter(adapter);
 
-        // Set up the ActionBar toggle with Toolbar
-        toggle = new ActionBarDrawerToggle(this, drawerLayout, toolbar, R.string.navigation_drawer_open, R.string.navigation_drawer_close);
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+
+        drawerLayout = findViewById(R.id.drawer_layout);
+        navigationView = findViewById(R.id.nav_view);
+
+        toggle = new androidx.appcompat.app.ActionBarDrawerToggle(
+                this, drawerLayout, toolbar,
+                R.string.navigation_drawer_open,
+                R.string.navigation_drawer_close
+        );
         drawerLayout.addDrawerListener(toggle);
         toggle.syncState();
 
-        /* Enable the Up button
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        getSupportActionBar().setHomeButtonEnabled(true);     // Enable home button
-        toggle.setDrawerIndicatorEnabled(true);  */            // Force hamburger icon
+        navigationView.setNavigationItemSelectedListener(item -> {
+            int id = item.getItemId();
 
-
-
-        // Set navigation item selected listener
-        navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
-            @Override
-            public boolean onNavigationItemSelected(MenuItem item) {
-                int id = item.getItemId();
-
-                if (id == R.id.nav_profile) {
-                    startActivity(new Intent(HomeActivity.this, ProfileActivity.class));
-                } else if (id == R.id.nav_pantry_list) {
-                    startActivity(new Intent(HomeActivity.this, PantryListActivity.class));
-                } else if (id == R.id.nav_logout) {
-                    mAuth.signOut();
-                    startActivity(new Intent(HomeActivity.this, LoginActivity.class));
-                    finish();
-                }
-
-                drawerLayout.closeDrawer(navigationView);
-                return true;
+            if (id == R.id.nav_profile) {
+                startActivity(new Intent(HomeActivity.this, ProfileActivity.class));
+            } else if (id == R.id.nav_join_pantry) {
+                showJoinPantryDialog();
+            } else if (id == R.id.nav_logout) {
+                mAuth.signOut();
+                startActivity(new Intent(HomeActivity.this, LoginActivity.class));
+                finish();
             }
+
+            drawerLayout.closeDrawers();
+            return true;
         });
 
-        // Load user's pantries
+        Button pantryListButton = findViewById(R.id.btn_pantry_list);
+        if (pantryListButton != null) {
+            pantryListButton.setOnClickListener(v -> {
+                Intent intent = new Intent(this, PantryListActivity.class);
+                startActivity(intent);
+            });
+        }
+
         loadUserPantries();
     }
-    @Override
-    public boolean onSupportNavigateUp() {
-        return toggle.onOptionsItemSelected(null) || super.onSupportNavigateUp();
-    }
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (toggle.onOptionsItemSelected(item)) {
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
-    }
 
-    private ListenerRegistration userListener;
-    private final List<ListenerRegistration> pantryListeners = new ArrayList<>();
-
-    private void loadUserPantries() {
-        // Clear old listeners if already active
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
         if (userListener != null) userListener.remove();
         for (ListenerRegistration l : pantryListeners) l.remove();
+        for (ListenerRegistration l : itemListeners) l.remove();
         pantryListeners.clear();
+        itemListeners.clear();
+    }
+
+    private void loadUserPantries() {
+        if (userListener != null) userListener.remove();
+        for (ListenerRegistration l : pantryListeners) l.remove();
+        for (ListenerRegistration l : itemListeners) l.remove();
+        pantryListeners.clear();
+        itemListeners.clear();
 
         DocumentReference userRef = db.collection("Users").document(userId);
 
@@ -170,7 +147,6 @@ public class HomeActivity extends AppCompatActivity {
             }
             if (documentSnapshot != null && documentSnapshot.exists()) {
                 List<String> pantryIds = (List<String>) documentSnapshot.get("pantries");
-
                 userPantries.clear();
 
                 if (pantryIds != null && !pantryIds.isEmpty()) {
@@ -181,29 +157,28 @@ public class HomeActivity extends AppCompatActivity {
                                     if (err != null) return;
                                     if (doc != null && doc.exists()) {
                                         String name = doc.getString("name");
-
-                                        // Remove old pantry with same id
+                                        boolean updated = false;
                                         for (int i = 0; i < userPantries.size(); i++) {
                                             if (userPantries.get(i).getId().equals(doc.getId())) {
                                                 userPantries.set(i, new Pantry(doc.getId(), name));
-                                                updateSpinner();
-                                                return;
+                                                updated = true;
+                                                break;
                                             }
                                         }
-                                        // Add new pantry
-                                        userPantries.add(new Pantry(doc.getId(), name));
+                                        if (!updated) {
+                                            userPantries.add(new Pantry(doc.getId(), name));
+                                        }
                                         updateSpinner();
                                     }
                                 });
                         pantryListeners.add(reg);
                     }
                 } else {
-                    updateSpinner(); // no pantries
+                    updateSpinner();
                 }
             }
         });
     }
-
 
     private void updateSpinner() {
         spinnerItems.clear();
@@ -211,13 +186,17 @@ public class HomeActivity extends AppCompatActivity {
         for (Pantry pantry : userPantries) {
             spinnerItems.add(pantry.getName());
         }
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, spinnerItems);
+
+        ArrayAdapter<String> spinnerAdapter =
+                new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, spinnerItems);
         spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         pantrySpinner.setAdapter(spinnerAdapter);
 
         pantrySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                for (ListenerRegistration l : itemListeners) l.remove();
+                itemListeners.clear();
                 if (position == 0) {
                     loadAllPantriesData();
                 } else {
@@ -228,23 +207,65 @@ public class HomeActivity extends AppCompatActivity {
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                // Do nothing
             }
         });
 
-        // Load default "All"
         if (pantrySpinner.getSelectedItemPosition() == 0) {
             loadAllPantriesData();
         }
     }
 
+    private void showJoinPantryDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Join Pantry");
+        final EditText input = new EditText(this);
+        input.setHint("Invitation Code");
+        builder.setView(input);
+
+        builder.setPositiveButton("Join", (dialog, which) -> {
+            String code = input.getText().toString().trim();
+            if (!code.isEmpty()) {
+                joinPantry(code);
+            }
+        });
+        builder.setNegativeButton("Cancel", null);
+        builder.show();
+    }
+
+    private void joinPantry(String code) {
+        db.collection("invitations")
+                .whereEqualTo("code", code)
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    if (!querySnapshot.isEmpty()) {
+                        DocumentSnapshot invitationDoc = querySnapshot.getDocuments().get(0);
+                        String pantryId = invitationDoc.getString("pantryId");
+
+                        db.collection("Users").document(userId)
+                                .update("pantries", FieldValue.arrayUnion(pantryId))
+                                .addOnSuccessListener(aVoid -> {
+                                    invitationDoc.getReference().delete();
+                                    Toast.makeText(this, "Joined pantry", Toast.LENGTH_SHORT).show();
+                                    loadUserPantries();
+                                });
+                    } else {
+                        Toast.makeText(this, "Invalid invitation code", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
     private void loadPantryData(String pantryId) {
         CollectionReference itemsRef = db.collection("Pantries").document(pantryId).collection("items");
-        itemsRef.get().addOnSuccessListener(querySnapshot -> {
-            processItems(querySnapshot.getDocuments(), false);
-        }).addOnFailureListener(e -> {
-            Toast.makeText(this, "Failed to load items", Toast.LENGTH_SHORT).show();
+        ListenerRegistration listener = itemsRef.addSnapshotListener((querySnapshot, e) -> {
+            if (e != null) {
+                Toast.makeText(this, "Failed to load items", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            if (querySnapshot != null) {
+                processItems(querySnapshot.getDocuments());
+            }
         });
+        itemListeners.add(listener);
     }
 
     private void loadAllPantriesData() {
@@ -253,25 +274,27 @@ public class HomeActivity extends AppCompatActivity {
             return;
         }
 
-        List<Task<QuerySnapshot>> tasks = new ArrayList<>();
         for (Pantry pantry : userPantries) {
             CollectionReference itemsRef = db.collection("Pantries").document(pantry.getId()).collection("items");
-            tasks.add(itemsRef.get());
+            ListenerRegistration listener = itemsRef.addSnapshotListener((querySnapshot, e) -> {
+                if (e != null) {
+                    Toast.makeText(this, "Failed to load items", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+                if (querySnapshot != null) {
+                    List<DocumentSnapshot> allDocs = new ArrayList<>();
+                    for (Pantry p : userPantries) {
+                        CollectionReference ref = db.collection("Pantries").document(p.getId()).collection("items");
+                        ref.get().addOnSuccessListener(qs -> allDocs.addAll(qs.getDocuments()))
+                                .addOnCompleteListener(task -> processItems(allDocs));
+                    }
+                }
+            });
+            itemListeners.add(listener);
         }
-
-        Tasks.whenAllSuccess(tasks).addOnSuccessListener(results -> {
-            List<DocumentSnapshot> allDocs = new ArrayList<>();
-            for (Object obj : results) {
-                QuerySnapshot qs = (QuerySnapshot) obj;
-                allDocs.addAll(qs.getDocuments());
-            }
-            processItems(allDocs, true);
-        }).addOnFailureListener(e -> {
-            Toast.makeText(this, "Failed to load all items", Toast.LENGTH_SHORT).show();
-        });
     }
 
-    private void processItems(List<DocumentSnapshot> documents, boolean isAll) {
+    private void processItems(List<DocumentSnapshot> documents) {
         List<Item> items = new ArrayList<>();
         for (DocumentSnapshot doc : documents) {
             Item item = doc.toObject(Item.class);
@@ -301,10 +324,9 @@ public class HomeActivity extends AppCompatActivity {
         updateUI(total, soonToExpire, expiringList);
     }
 
-    private void updateUI(int total, int soonToExpire, List<com.example.pantryminder.Item> expiringList) {
+    private void updateUI(int total, int soonToExpire, List<Item> expiringList) {
         totalItemsText.setText("Total Items: " + total);
         expiringSoonText.setText("Expiring Soon: " + soonToExpire);
         adapter.updateList(expiringList);
     }
-
 }
