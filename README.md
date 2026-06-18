@@ -1,17 +1,15 @@
-**Pantry Minder**
-Overview
-
+# Pantry Minder
 Pantry Minder is an Android application designed to help users manage pantry inventories efficiently. The application allows users to organize food items, track expiry dates, categorize products, and receive reminders about items that are nearing expiration.
 
 The goal of the application is to reduce food waste and improve household inventory management.
 
-**Features**
-> . User Management
-> . User registration and login using Firebase Authentication
-> . Secure account management
-> . Pantry Management
-> . Create and manage multiple pantries
-> . View pantry contents
+## Features
+- User Management
+- User registration and login using Firebase Authentication
+- Secure account management
+- Pantry Management
+- Create and manage multiple pantries
+- View pantry contents
 > . Add, update, and delete items
 > . Item Management
 > . Store item name, category, quantity, unit, and expiry date
