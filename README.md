@@ -6,39 +6,39 @@ Pantry Minder is an Android application designed to help users manage pantry inv
 The goal of the application is to reduce food waste and improve household inventory management.
 
 **Features**
-> User Management
-> User registration and login using Firebase Authentication
-> Secure account management
-> Pantry Management
-> Create and manage multiple pantries
-> View pantry contents
-> Add, update, and delete items
-> Item Management
-> Store item name, category, quantity, unit, and expiry date
-> Categorize pantry items
-> Filter items by category
-> Expiry Tracking
-> Monitor expiring items
-> Display items nearing expiration
-> Reduce food waste through timely notifications
-> Voice Input
-> Add items using voice commands
-> Automatic extraction of:
+> .User Management
+> .User registration and login using Firebase Authentication
+> .Secure account management
+> .Pantry Management
+> .Create and manage multiple pantries
+> .View pantry contents
+> .Add, update, and delete items
+> .Item Management
+> .Store item name, category, quantity, unit, and expiry date
+> .Categorize pantry items
+> .Filter items by category
+> .Expiry Tracking
+> .Monitor expiring items
+> .Display items nearing expiration
+> .Reduce food waste through timely notifications
+> .Voice Input
+> .Add items using voice commands
+> .Automatic extraction of:
 Item name
 Quantity
 Unit
 Category
 Expiry date
-> Invitation System
-> Generate invitation codes
-> Share pantry access with family members
+> .Invitation System
+> .Generate invitation codes
+> .Share pantry access with family members
 
 **Technologies Used**
-> Java
-> Android Studio
-> Firebase Authentication
-> Cloud Firestore
-> Speech Recognition API
+> .Java
+> .Android Studio
+> .Firebase Authentication
+> .Cloud Firestore
+> .Speech Recognition API
 
 **Project Structure**
 app/
