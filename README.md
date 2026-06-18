@@ -101,7 +101,7 @@ License
 This project is developed for educational purposes.
 
 *
-<img width="768" height="1366" alt="Screenshot_2025-10-20-21-50-31-411_com example pantryminder" src="https://github.com/user-attachments/assets/797d31d8-30fd-44eb-96e2-c4d2c9328c33" />
+<img width="1080" height="2400" alt="Screenshot_2025-10-20-21-50-31-411_com example pantryminder" src="https://github.com/user-attachments/assets/797d31d8-30fd-44eb-96e2-c4d2c9328c33" />
 *
 <img width="1080" height="2400" alt="Screenshot_2025-10-20-21-50-13-507_com example pantryminder" src="https://github.com/user-attachments/assets/4ecb2654-3b78-4294-b007-ea3ba3ca03ce" />
 *
