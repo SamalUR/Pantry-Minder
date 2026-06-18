@@ -1,46 +1,44 @@
-**Pantry Minder**
-Overview
-
+# Pantry Minder
 Pantry Minder is an Android application designed to help users manage pantry inventories efficiently. The application allows users to organize food items, track expiry dates, categorize products, and receive reminders about items that are nearing expiration.
 
 The goal of the application is to reduce food waste and improve household inventory management.
 
-**Features**
-> . User Management
-> . User registration and login using Firebase Authentication
-> . Secure account management
-> . Pantry Management
-> . Create and manage multiple pantries
-> . View pantry contents
-> . Add, update, and delete items
-> . Item Management
-> . Store item name, category, quantity, unit, and expiry date
-> . Categorize pantry items
-> . Filter items by category
-> . Expiry Tracking
-> . Monitor expiring items
-> . Display items nearing expiration
-> . Reduce food waste through timely notifications
-> . Voice Input
-> . Add items using voice commands
-> . Automatic extraction of:
+## Features
+- User Management
+- User registration and login using Firebase Authentication
+- Secure account management
+- Pantry Management
+- Create and manage multiple pantries
+- View pantry contents
+- Add, update, and delete items
+- Item Management
+- Store item name, category, quantity, unit, and expiry date
+- Categorize pantry items
+- Filter items by category
+- Expiry Tracking
+- Monitor expiring items
+- Display items nearing expiration
+- Reduce food waste through timely notifications
+- Voice Input
+- Add items using voice commands
+- Automatic extraction of:
 Item name
 Quantity
 Unit
 Category
 Expiry date
-> . Invitation System
-> . Generate invitation codes
-> . Share pantry access with family members
+- Invitation System
+- Generate invitation codes
+- Share pantry access with family members
 
-**Technologies Used**
-> . Java
-> . Android Studio
-> . Firebase Authentication
-> . Cloud Firestore
-> . Speech Recognition API
+## Technologies Used
+- Java
+- Android Studio
+- Firebase Authentication
+- Cloud Firestore
+- Speech Recognition API
 
-**Project Structure**
+## Project Structure
 app/
 ├── activities/
 │   ├── LoginActivity
@@ -60,7 +58,7 @@ app/
 │
 └── firebase/
 
-Installation
+### Installation
 Prerequisites
 Android Studio
 Java 11+
@@ -75,7 +73,7 @@ app/google-services.json
 Sync Gradle.
 Run the application on an emulator or Android device.
 
-Voice Commands Examples
+## Voice Commands Examples
 
 Examples:
 
@@ -91,16 +89,17 @@ Push notifications for expiry reminders
 AI-based grocery recommendations
 Dark mode support
 Multi-language support
-Author
 
-**Samal Ujitha Ruwansiri**
-Undergraduate Student
-University of Colombo
+## Author
 
-License
+-**Samal Ujitha Ruwansiri**
+-Undergraduate Student
+-University of Colombo
+
+## License
 This project is developed for educational purposes.
 
-*
+## Screenshots
 <img width="1080" height="2400" alt="Screenshot_2025-10-20-21-50-31-411_com example pantryminder" src="https://github.com/user-attachments/assets/797d31d8-30fd-44eb-96e2-c4d2c9328c33" />
 *
 <img width="1080" height="2400" alt="Screenshot_2025-10-20-21-50-13-507_com example pantryminder" src="https://github.com/user-attachments/assets/4ecb2654-3b78-4294-b007-ea3ba3ca03ce" />
