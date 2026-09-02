@@ -109,32 +109,45 @@
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
-
-            <com.google.android.material.textfield.TextInputLayout
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/expiry_edit_text"
-                    android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp">
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:hint="Expiry Date"
-                    android:enabled="false"
-                    android:focusable="false" />
-            </com.google.android.material.textfield.TextInputLayout>
+                    android:layout_marginBottom="16dp"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btn_pick_expiry"
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/expiry_edit_text"
+                        android:layout_width="218dp"
+                        android:layout_height="wrap_content"
+                        android:enabled="false"
+                        android:focusable="false"
+                        android:hint="Expiry Date" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_pick_expiry"
+                    android:layout_width="wrap_content"
+                    android:layout_height="60dp"
+                    android:layout_gravity="end"
+                    android:layout_marginBottom="24dp"
+                    android:backgroundTint="#50C878"
+                    android:icon="@android:drawable/ic_menu_today"
+                    android:text="Select Date"
+                    app:iconTint="#FFFFFF" />
+            </LinearLayout>
+
+            <ProgressBar
+                android:id="@+id/progress_bar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Select Date"
-                android:icon="@android:drawable/ic_menu_today"
-                app:iconTint="#FFFFFF"
-                android:backgroundTint="#50C878"
-                android:layout_gravity="end"
-                android:layout_marginBottom="24dp" />
-
+                android:layout_gravity="center"
+                android:visibility="gone" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/mic_all"

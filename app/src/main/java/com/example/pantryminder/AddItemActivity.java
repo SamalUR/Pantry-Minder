@@ -9,6 +9,7 @@ import android.speech.RecognizerIntent;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -31,6 +32,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import com.android.volley.Request;
+import com.android.volley.RequestQueue;
+import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 public class AddItemActivity extends AppCompatActivity {
 
 
@@ -42,6 +50,8 @@ public class AddItemActivity extends AppCompatActivity {
     private Map<String, List<String>> categoryUnitsMap;
     private List<String> categories;
     private static final int REQUEST_CODE_ALL_FIELDS = 1;
+
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,13 +90,34 @@ public class AddItemActivity extends AppCompatActivity {
             addButton = findViewById(R.id.btn_add);
             pickExpiryButton = findViewById(R.id.btn_pick_expiry);
             micAll = findViewById(R.id.mic_all);
+            progressBar = findViewById(R.id.progress_bar);
 
             return nameEditText != null && categorySpinner != null && addButton != null;
         } catch (Exception e) {
             return false;
         }
     }
+    private void selectSpinnerValue(Spinner spinner, String valueToMatch) {
+        if (spinner == null || spinner.getAdapter() == null || valueToMatch == null || valueToMatch.isEmpty()) {
+            return;
+        }
+        ArrayAdapter adapter = (ArrayAdapter) spinner.getAdapter();
+        for (int i = 0; i < adapter.getCount(); i++) {
+            String item = adapter.getItem(i).toString();
+            if (item.equalsIgnoreCase(valueToMatch) || item.toLowerCase().contains(valueToMatch.toLowerCase())) {
+                spinner.setSelection(i);
+                break;
+            }
+        }
+    }
 
+    private void setLoading(boolean isLoading) {
+        if (progressBar != null) {
+            progressBar.setVisibility(isLoading ? View.VISIBLE : View.GONE);
+        }
+        if (micAll != null) micAll.setEnabled(!isLoading);
+        if (addButton != null) addButton.setEnabled(!isLoading);
+    }
     private void setupSpinners() {
         categoryUnitsMap = createCategoryUnitsMap();
         categories = createCategoriesList();
@@ -180,43 +211,97 @@ public class AddItemActivity extends AppCompatActivity {
 
 
     private void parseVoiceCommand(String spokenText) {
-        Toast.makeText(this, "Heard: '" + spokenText + "'", Toast.LENGTH_SHORT).show();
-        clearAllFields();
+        setLoading(true);
 
-        String[] words = spokenText.split("\\s+");
-        List<String> wordList = new ArrayList<>(Arrays.asList(words));
+        String url = "http://localhost:3000/api/voice/parse";
 
-
-        String date = findDate(wordList);
-        if (date != null) {
-            expiryEditText.setText(date);
-            removeWords(wordList, findDateKeywords(date));
+        JSONObject postData = new JSONObject();
+        try {
+            postData.put("text", spokenText);
+        } catch (JSONException e) {
+            e.printStackTrace();
+            setLoading(false);
+            Toast.makeText(this, "Failed to build request", Toast.LENGTH_SHORT).show();
+            return;
         }
 
-        String quantity = findQuantity(wordList);
-        if (quantity != null) {
-            quantityEditText.setText(quantity);
-            removeWords(wordList, quantity);
+        JsonObjectRequest jsonObjectRequest = new JsonObjectRequest(
+                Request.Method.POST,
+                url,
+                postData,
+                response -> {
+                    setLoading(false);
+                    try {
+                        boolean success = response.getBoolean("success");
+                        if (success) {
+                            JSONObject data = response.getJSONObject("data");
+
+                            String name = data.optString("name", "");
+                            int quantity = data.optInt("quantity", 1);
+                            String unit = data.optString("unit", "");
+                            String category = data.optString("category", "");
+                            String expiryDate = data.optString("expiryDate", "");
+
+                            clearAllFields();
+
+                            // Fill Name, Quantity & Expiry Date
+                            if (!name.isEmpty()) nameEditText.setText(capitalizeFirst(name));
+                            quantityEditText.setText(String.valueOf(quantity));
+                            if (!expiryDate.equals("null") && !expiryDate.isEmpty()) {
+                                expiryEditText.setText(expiryDate);
+                            }
+
+                            // Category — Spinner එකේ ඇත්නම් Select කරයි, නැත්නම් Custom EditText එකට දමයි
+                            if (!category.isEmpty()) {
+                                handleCategoryOrUnitInput(categorySpinner, categoryEditText, category);
+                            }
+
+                            // Unit — Category එක මාරු වී Spinner එක Refresh වන තෙක් 200ms පොඩි delay එකකින් Update කරයි
+                            if (!unit.isEmpty()) {
+                                unitSpinner.postDelayed(() ->
+                                        handleCategoryOrUnitInput(unitSpinner, unitEditText, unit), 200);
+                            }
+
+                            showPerfectFeedback();
+                        } else {
+                            Toast.makeText(this, "Could not process voice input", Toast.LENGTH_SHORT).show();
+                        }
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                        Toast.makeText(this, "Error reading server response", Toast.LENGTH_SHORT).show();
+                    }
+                },
+                error -> {
+                    setLoading(false);
+                    error.printStackTrace();
+                    Toast.makeText(this, "Server error. Ensure backend is running.", Toast.LENGTH_LONG).show();
+                }
+        );
+
+        RequestQueue requestQueue = Volley.newRequestQueue(this);
+        requestQueue.add(jsonObjectRequest);
+    }
+
+    private void handleCategoryOrUnitInput(Spinner spinner, TextInputEditText editText, String value) {
+        if (value == null || value.isEmpty()) return;
+
+        boolean foundInSpinner = false;
+        if (spinner != null && spinner.getAdapter() != null) {
+            ArrayAdapter adapter = (ArrayAdapter) spinner.getAdapter();
+            for (int i = 0; i < adapter.getCount(); i++) {
+                String item = adapter.getItem(i).toString();
+                if (item.equalsIgnoreCase(value) || item.toLowerCase().contains(value.toLowerCase())) {
+                    spinner.setSelection(i);
+                    foundInSpinner = true;
+                    break;
+                }
+            }
         }
 
-        String unit = findUnit(wordList);
-        if (unit != null) {
-            unitEditText.setText(capitalizeFirst(unit));
-            removeWords(wordList, unit);
+        // Spinner එකේ නැතිනම් Custom Value එකක් ලෙස EditText එකට එකතු කරයි
+        if (!foundInSpinner && editText != null) {
+            editText.setText(capitalizeFirst(value));
         }
-
-        String category = findCategoryKeyword(wordList);
-        if (category != null) {
-            populateCategoryField(category);
-            removeWords(wordList, category.toLowerCase());
-        }
-
-        String name = String.join(" ", wordList).trim();
-        if (!name.isEmpty()) {
-            nameEditText.setText(capitalizeFirst(name));
-        }
-
-        showPerfectFeedback();
     }
 
     private String findDate(List<String> words) {
