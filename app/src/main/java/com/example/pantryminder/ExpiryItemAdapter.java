@@ -15,9 +15,20 @@ import java.util.Locale;
 public class ExpiryItemAdapter extends RecyclerView.Adapter<ExpiryItemAdapter.ViewHolder> {
 
     private List<Item> itemList;
+    private OnItemClickListener listener;
+
+    // Item click එක handle කිරීමට Click Listener Interface එකක්
+    public interface OnItemClickListener {
+        void onItemClick(Item item);
+    }
 
     public ExpiryItemAdapter(List<Item> itemList) {
         this.itemList = itemList;
+    }
+
+    // HomeActivity එකෙන් Click Listener එක සම්බන්ධ කිරීමට Method එක
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        this.listener = listener;
     }
 
     public void updateList(List<Item> newList) {
@@ -52,11 +63,19 @@ public class ExpiryItemAdapter extends RecyclerView.Adapter<ExpiryItemAdapter.Vi
         }
 
         holder.itemQuantityText.setText("Quantity: " + item.getQuantity() + " " + item.getUnit());
+
+        // Item එකක් Click කළ විට Event එක Trigger කිරීම
+        holder.itemView.setOnClickListener(v -> {
+            int currentPosition = holder.getAdapterPosition();
+            if (listener != null && currentPosition != RecyclerView.NO_POSITION) {
+                listener.onItemClick(itemList.get(currentPosition));
+            }
+        });
     }
 
     @Override
     public int getItemCount() {
-        return itemList.size();
+        return itemList != null ? itemList.size() : 0;
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {
@@ -70,7 +89,7 @@ public class ExpiryItemAdapter extends RecyclerView.Adapter<ExpiryItemAdapter.Vi
             itemNameText = itemView.findViewById(R.id.itemNameText);
             itemExpiryText = itemView.findViewById(R.id.itemExpiryText);
             itemQuantityText = itemView.findViewById(R.id.itemQuantityText);
-            itemCategoryText = itemView.findViewById(R.id.itemCategoryText); // added
+            itemCategoryText = itemView.findViewById(R.id.itemCategoryText);
         }
     }
 }

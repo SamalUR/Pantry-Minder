@@ -15,8 +15,8 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.DocumentReference;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class ProfileActivity extends AppCompatActivity {
     private TextView nameText, uidText, emailText;
@@ -62,16 +62,13 @@ public class ProfileActivity extends AppCompatActivity {
     private void showEditOptionsDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Edit Details");
-        String[] options = {"Change Name", "Change Email", "Change Password"};
+        String[] options = {"Change Name", "Change Password"};
         builder.setItems(options, (dialog, which) -> {
             switch (which) {
                 case 0:
                     showChangeNameDialog();
                     break;
                 case 1:
-                    showChangeEmailDialog();
-                    break;
-                case 2:
                     showChangePasswordDialog();
                     break;
             }
@@ -101,29 +98,6 @@ public class ProfileActivity extends AppCompatActivity {
         builder.show();
     }
 
-    private void showChangeEmailDialog() {
-        View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_change_detail, null);
-        EditText passwordEdit = dialogView.findViewById(R.id.edit_password);
-        EditText newDetailEdit = dialogView.findViewById(R.id.edit_new_detail);
-        newDetailEdit.setHint("New Email");
-        newDetailEdit.setInputType(android.text.InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS);
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Change Email");
-        builder.setView(dialogView);
-        builder.setPositiveButton("Update", (dialog, which) -> {
-            String password = passwordEdit.getText().toString().trim();
-            String newEmail = newDetailEdit.getText().toString().trim();
-            if (password.isEmpty() || newEmail.isEmpty()) {
-                Toast.makeText(this, "All fields are required", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            reauthenticateAndUpdateEmail(password, newEmail);
-        });
-        builder.setNegativeButton("Cancel", null);
-        builder.show();
-    }
-
     private void showChangePasswordDialog() {
         View dialogView = LayoutInflater.from(this).inflate(R.layout.dialog_change_password, null);
         EditText currentPasswordEdit = dialogView.findViewById(R.id.edit_current_password);
@@ -147,6 +121,8 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void reauthenticateAndUpdateName(String password, String newName) {
         FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null || user.getEmail() == null) return;
+
         AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), password);
         user.reauthenticate(credential)
                 .addOnSuccessListener(aVoid -> {
@@ -157,25 +133,10 @@ public class ProfileActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> Toast.makeText(this, "Authentication failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
-    private void reauthenticateAndUpdateEmail(String password, String newEmail) {
-        FirebaseUser user = mAuth.getCurrentUser();
-        AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), password);
-        user.reauthenticate(credential)
-                .addOnSuccessListener(aVoid -> {
-                    user.updateEmail(newEmail)
-                            .addOnSuccessListener(aVoid2 -> {
-                                emailText.setText("Email: " + newEmail);
-                                Toast.makeText(this, "Email updated", Toast.LENGTH_SHORT).show();
-                                // Update Firestore if needed
-                                db.collection("Users").document(userId).update("email", newEmail);
-                            })
-                            .addOnFailureListener(e -> Toast.makeText(this, "Failed to update email: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, "Authentication failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-    }
-
     private void reauthenticateAndUpdatePassword(String currentPassword, String newPassword) {
         FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null || user.getEmail() == null) return;
+
         AuthCredential credential = EmailAuthProvider.getCredential(user.getEmail(), currentPassword);
         user.reauthenticate(credential)
                 .addOnSuccessListener(aVoid -> {

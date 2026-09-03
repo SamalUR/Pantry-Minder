@@ -137,7 +137,24 @@ public class PantryListActivity extends AppCompatActivity {
             public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction) {
                 int position = viewHolder.getAdapterPosition();
                 Pantry pantry = pantryList.get(position);
-                deletePantry(pantry);
+
+                // Delete කිරීමට පෙර Confirmation Dialog එකක් පෙන්වීම
+                new AlertDialog.Builder(PantryListActivity.this)
+                        .setTitle("Delete Pantry")
+                        .setMessage("Are you sure you want to delete '" + pantry.getName() + "'?")
+                        .setPositiveButton("Delete", (dialog, which) -> {
+                            // User "Delete" ක්ලික් කළොත් පමණක් Delete ක්‍රියාවලිය සිදුවේ
+                            deletePantry(pantry);
+                        })
+                        .setNegativeButton("Cancel", (dialog, which) -> {
+                            // User "Cancel" කළොත් Swipe වුණු Item එක ආපහු පැත්තටම Reset කරයි
+                            pantryAdapter.notifyItemChanged(position);
+                        })
+                        .setOnCancelListener(dialog -> {
+                            // Dialog එකෙන් එළිය ක්ලික් කරලා Back වුණොත් Item එක Reset කරයි
+                            pantryAdapter.notifyItemChanged(position);
+                        })
+                        .show();
             }
         };
         new ItemTouchHelper(callback).attachToRecyclerView(pantryRecyclerView);

@@ -10,8 +10,10 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.Toast;
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.firebase.Timestamp;
@@ -21,6 +23,7 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -65,6 +68,9 @@ public class PantryDetailActivity extends AppCompatActivity {
         });
 
         generateCodeButton.setOnClickListener(v -> generateInvitationCode());
+
+        // Setup Swipe-to-Delete Listener
+        setupSwipeToDelete();
 
         loadCategories();
         setupCategorySpinner();
@@ -149,10 +155,65 @@ public class PantryDetailActivity extends AppCompatActivity {
                         itemList.add(item);
                     }
                 }
+
+                // Sort Items Alphabetically (A-Z) by Name
+                Collections.sort(itemList, (i1, i2) -> {
+                    if (i1.getName() == null) return -1;
+                    if (i2.getName() == null) return 1;
+                    return i1.getName().compareToIgnoreCase(i2.getName());
+                });
+
                 itemAdapter.notifyDataSetChanged();
                 loadCategories();
             }
         });
+    }
+
+    private void setupSwipeToDelete() {
+        ItemTouchHelper.SimpleCallback callback = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                return false;
+            }
+
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                int position = viewHolder.getAdapterPosition();
+                Item item = itemList.get(position);
+
+                // Delete කිරීමට පෙර Confirmation Dialog එකක් පෙන්වීම
+                new AlertDialog.Builder(PantryDetailActivity.this)
+                        .setTitle("Delete Item")
+                        .setMessage("Are you sure you want to delete '" + item.getName() + "'?")
+                        .setPositiveButton("Delete", (dialog, which) -> deleteItem(item))
+                        .setNegativeButton("Cancel", (dialog, which) -> {
+                            // Cancel කළහොත් Item එක පෙර තිබූ ස්ථානයට සකසයි
+                            itemAdapter.notifyItemChanged(position);
+                        })
+                        .setOnCancelListener(dialog -> {
+                            // Dialog එකෙන් පිටත Click කළහොත් Reset කරයි
+                            itemAdapter.notifyItemChanged(position);
+                        })
+                        .show();
+            }
+        };
+
+        new ItemTouchHelper(callback).attachToRecyclerView(itemsRecyclerView);
+    }
+
+    private void deleteItem(Item item) {
+        db.collection("Pantries")
+                .document(pantryId)
+                .collection("items")
+                .document(item.getId())
+                .delete()
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Item deleted", Toast.LENGTH_SHORT).show();
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Failed to delete item: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    itemAdapter.notifyDataSetChanged();
+                });
     }
 
     private void onItemSelected(Item item) {

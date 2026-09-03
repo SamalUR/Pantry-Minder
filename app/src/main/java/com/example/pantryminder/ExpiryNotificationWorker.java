@@ -51,7 +51,10 @@ public class ExpiryNotificationWorker extends Worker {
                                                 long expiryTime = item.getExpiryDate().toDate().getTime();
                                                 long now = System.currentTimeMillis();
                                                 long fiveDaysMillis = TimeUnit.DAYS.toMillis(5);
-                                                if (expiryTime <= now + fiveDaysMillis && expiryTime > now) {
+
+                                                // FIXED CONDITION:
+                                                // ඉදිරි දින 5 ඇතුළත Expire වන සහ දැනටමත් Expire වී ඇති (ඊයේ/අද) සියලුම Items එකතු කර ගනී.
+                                                if (expiryTime <= (now + fiveDaysMillis)) {
                                                     expiringItems.add(item);
                                                 }
                                             }
@@ -90,16 +93,16 @@ public class ExpiryNotificationWorker extends Worker {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
                     "Expiry Notifications",
-                    NotificationManager.IMPORTANCE_DEFAULT
+                    NotificationManager.IMPORTANCE_HIGH
             );
             notificationManager.createNotificationChannel(channel);
         }
 
-
         StringBuilder content = new StringBuilder("The following items are expiring soon:\n");
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
         for (Item item : expiringItems) {
-            content.append(item.getName())
+            content.append("• ")
+                    .append(item.getName())
                     .append(" (")
                     .append(item.getQuantity())
                     .append(" ")
@@ -110,11 +113,11 @@ public class ExpiryNotificationWorker extends Worker {
         }
 
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID)
-                .setSmallIcon(R.drawable.ic_notification)
+                .setSmallIcon(android.R.drawable.ic_dialog_alert) // Resource error වළක්වා ගැනීමට Default Icon භාවිත කර ඇත
                 .setContentTitle("Items Expiring Soon")
-                .setContentText("You have " + expiringItems.size() + " item(s) expiring within 5 days")
+                .setContentText("You have " + expiringItems.size() + " item(s) expiring soon")
                 .setStyle(new NotificationCompat.BigTextStyle().bigText(content.toString()))
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true);
 
         notificationManager.notify(NOTIFICATION_ID, builder.build());

@@ -213,7 +213,7 @@ public class AddItemActivity extends AppCompatActivity {
     private void parseVoiceCommand(String spokenText) {
         setLoading(true);
 
-        String url = "http://localhost:3000/api/voice/parse";
+        String url = "https://pantry-minder.onrender.com/api/voice/parse";
 
         JSONObject postData = new JSONObject();
         try {
