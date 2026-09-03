@@ -3,31 +3,29 @@ package com.example.pantryminder;
 import com.google.firebase.Timestamp;
 
 public class Item {
+    private String id;
     private String name;
-    private Timestamp expiryDate;
     private String category;
     private int quantity;
     private String unit;
+    private Timestamp expiryDate;
 
-    public Item() {
-        // Default constructor for Firestore
+    public Item() {}
+
+    public String getId() {
+        return id;
     }
 
-    // Getters and Setters
+    public void setId(String id) {
+        this.id = id;
+    }
+
     public String getName() {
         return name;
     }
 
     public void setName(String name) {
         this.name = name;
-    }
-
-    public Timestamp getExpiryDate() {
-        return expiryDate;
-    }
-
-    public void setExpiryDate(Timestamp expiryDate) {
-        this.expiryDate = expiryDate;
     }
 
     public String getCategory() {
@@ -52,5 +50,13 @@ public class Item {
 
     public void setUnit(String unit) {
         this.unit = unit;
+    }
+
+    public Timestamp getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(Timestamp expiryDate) {
+        this.expiryDate = expiryDate;
     }
 }

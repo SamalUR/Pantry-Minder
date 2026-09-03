@@ -37,6 +37,12 @@ public class ExpiryItemAdapter extends RecyclerView.Adapter<ExpiryItemAdapter.Vi
         Item item = itemList.get(position);
         holder.itemNameText.setText(item.getName());
 
+        if (item.getCategory() != null && !item.getCategory().isEmpty()) {
+            holder.itemCategoryText.setText("Category: " + item.getCategory());
+        } else {
+            holder.itemCategoryText.setText("Category: N/A");
+        }
+
         if (item.getExpiryDate() != null) {
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
             String expiryStr = sdf.format(item.getExpiryDate().toDate());
@@ -45,7 +51,6 @@ public class ExpiryItemAdapter extends RecyclerView.Adapter<ExpiryItemAdapter.Vi
             holder.itemExpiryText.setText("Expiry: N/A");
         }
 
-        holder.itemCategoryText.setText("Category: " + item.getCategory());
         holder.itemQuantityText.setText("Quantity: " + item.getQuantity() + " " + item.getUnit());
     }
 
@@ -57,15 +62,15 @@ public class ExpiryItemAdapter extends RecyclerView.Adapter<ExpiryItemAdapter.Vi
     public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView itemNameText;
         TextView itemExpiryText;
-        TextView itemCategoryText;
         TextView itemQuantityText;
+        TextView itemCategoryText;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             itemNameText = itemView.findViewById(R.id.itemNameText);
             itemExpiryText = itemView.findViewById(R.id.itemExpiryText);
-            itemCategoryText = itemView.findViewById(R.id.itemCategoryText);
             itemQuantityText = itemView.findViewById(R.id.itemQuantityText);
+            itemCategoryText = itemView.findViewById(R.id.itemCategoryText); // added
         }
     }
 }
