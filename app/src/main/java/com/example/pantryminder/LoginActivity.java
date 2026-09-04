@@ -92,7 +92,7 @@ public class LoginActivity extends AppCompatActivity {
         });
     }
 
-    // --- SESSION CHECK ON APP START ---
+    // SESSION CHECK ON APP START
     @Override
     protected void onStart() {
         super.onStart();

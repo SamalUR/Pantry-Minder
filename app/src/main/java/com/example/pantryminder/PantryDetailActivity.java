@@ -181,17 +181,15 @@ public class PantryDetailActivity extends AppCompatActivity {
                 int position = viewHolder.getAdapterPosition();
                 Item item = itemList.get(position);
 
-                // Delete කිරීමට පෙර Confirmation Dialog එකක් පෙන්වීම
+                // Show a confirmation dialog before deleting
                 new AlertDialog.Builder(PantryDetailActivity.this)
                         .setTitle("Delete Item")
                         .setMessage("Are you sure you want to delete '" + item.getName() + "'?")
                         .setPositiveButton("Delete", (dialog, which) -> deleteItem(item))
                         .setNegativeButton("Cancel", (dialog, which) -> {
-                            // Cancel කළහොත් Item එක පෙර තිබූ ස්ථානයට සකසයි
                             itemAdapter.notifyItemChanged(position);
                         })
                         .setOnCancelListener(dialog -> {
-                            // Dialog එකෙන් පිටත Click කළහොත් Reset කරයි
                             itemAdapter.notifyItemChanged(position);
                         })
                         .show();

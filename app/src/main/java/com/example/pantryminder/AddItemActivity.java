@@ -50,7 +50,6 @@ public class AddItemActivity extends AppCompatActivity {
     private Map<String, List<String>> categoryUnitsMap;
     private List<String> categories;
     private static final int REQUEST_CODE_ALL_FIELDS = 1;
-
     private ProgressBar progressBar;
 
     @Override
@@ -251,12 +250,12 @@ public class AddItemActivity extends AppCompatActivity {
                                 expiryEditText.setText(expiryDate);
                             }
 
-                            // Category — Spinner එකේ ඇත්නම් Select කරයි, නැත්නම් Custom EditText එකට දමයි
+                            // Category — Spinner or Custom EditText
                             if (!category.isEmpty()) {
                                 handleCategoryOrUnitInput(categorySpinner, categoryEditText, category);
                             }
 
-                            // Unit — Category එක මාරු වී Spinner එක Refresh වන තෙක් 200ms පොඩි delay එකකින් Update කරයි
+                            // Unit — It updates with a small 200ms delay until the spinner refreshes after the category is changed.
                             if (!unit.isEmpty()) {
                                 unitSpinner.postDelayed(() ->
                                         handleCategoryOrUnitInput(unitSpinner, unitEditText, unit), 200);
@@ -298,82 +297,10 @@ public class AddItemActivity extends AppCompatActivity {
             }
         }
 
-        // Spinner එකේ නැතිනම් Custom Value එකක් ලෙස EditText එකට එකතු කරයි
         if (!foundInSpinner && editText != null) {
             editText.setText(capitalizeFirst(value));
         }
     }
-
-    private String findDate(List<String> words) {
-        for (int i = 0; i < words.size(); i++) {
-            String word = words.get(i).toLowerCase();
-            if (word.equals("tomorrow")) return getTomorrowDate();
-            if (word.equals("today")) return getTodayDate();
-            if (word.equals("next") && i + 1 < words.size() && words.get(i + 1).equals("week")) {
-                return getNextWeekDate();
-            }
-        }
-        return null;
-    }
-
-    private List<String> findDateKeywords(String date) {
-        if (date != null) {
-            if (date.contains("tomorrow")) return Arrays.asList("tomorrow");
-            if (date.contains("today")) return Arrays.asList("today");
-            if (date.contains("next week")) return Arrays.asList("next", "week");
-        }
-        return new ArrayList<>();
-    }
-
-    private String findQuantity(List<String> words) {
-        for (String word : words) {
-            if (word.matches("\\d+")) return word;
-        }
-        return null;
-    }
-
-    private String findUnit(List<String> words) {
-        String[] units = {"liter", "litre", "ml", "gram", "g", "kg", "piece", "pieces",
-                "pack", "packet", "bottle", "can", "box", "dozen", "bunch"};
-        for (String word : words) {
-            for (String unit : units) {
-                if (word.contains(unit)) return unit;
-            }
-        }
-        return null;
-    }
-
-    private String findCategoryKeyword(List<String> words) {
-        Map<String, String> keywords = new HashMap<>();
-        keywords.put("milk", "Dairy Products");
-        keywords.put("cheese", "Dairy Products");
-        keywords.put("apple", "Fruits");
-        keywords.put("banana", "Fruits");
-        keywords.put("rice", "Grains & Cereals");
-        keywords.put("bread", "Bakery Items");
-        keywords.put("tomato", "Vegetables");
-        keywords.put("chicken", "Meat & Seafood");
-        keywords.put("water", "Beverages");
-        keywords.put("chips", "Snacks & Sweets");
-
-        for (String word : words) {
-            if (keywords.containsKey(word.toLowerCase())) {
-                return keywords.get(word.toLowerCase());
-            }
-        }
-        return null;
-    }
-
-    private void removeWords(List<String> wordList, String target) {
-        wordList.removeIf(word -> word.equalsIgnoreCase(target));
-    }
-
-    private void removeWords(List<String> wordList, List<String> targets) {
-        for (String target : targets) {
-            removeWords(wordList, target);
-        }
-    }
-
     private List<String> createCategoriesList() {
         return Arrays.asList(
                 "Grains & Cereals", "Vegetables", "Fruits", "Dairy Products",
@@ -447,37 +374,6 @@ public class AddItemActivity extends AppCompatActivity {
         if (categorySpinner != null) categorySpinner.setSelection(0);
         if (unitSpinner != null) unitSpinner.setSelection(0);
     }
-
-    private String getTomorrowDate() {
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_MONTH, 1);
-        return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(cal.getTime());
-    }
-
-    private String getTodayDate() {
-        return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
-    }
-
-    private String getNextWeekDate() {
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DAY_OF_MONTH, 7);
-        return new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(cal.getTime());
-    }
-
-    private void populateCategoryField(String category) {
-        if (categorySpinner != null) {
-            for (int i = 0; i < categories.size(); i++) {
-                if (categories.get(i).equalsIgnoreCase(category)) {
-                    categorySpinner.setSelection(i);
-                    return;
-                }
-            }
-        }
-        if (categoryEditText != null) {
-            categoryEditText.setText(category);
-        }
-    }
-
     private void addItem() {
         String name = getTextSafely(nameEditText);
         String category = getTextSafely(categoryEditText);

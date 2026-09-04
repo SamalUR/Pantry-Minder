@@ -17,7 +17,7 @@ public class ExpiryItemAdapter extends RecyclerView.Adapter<ExpiryItemAdapter.Vi
     private List<Item> itemList;
     private OnItemClickListener listener;
 
-    // Item click එක handle කිරීමට Click Listener Interface එකක්
+
     public interface OnItemClickListener {
         void onItemClick(Item item);
     }
@@ -26,7 +26,7 @@ public class ExpiryItemAdapter extends RecyclerView.Adapter<ExpiryItemAdapter.Vi
         this.itemList = itemList;
     }
 
-    // HomeActivity එකෙන් Click Listener එක සම්බන්ධ කිරීමට Method එක
+    // Method to connect Click Listener from HomeActivity
     public void setOnItemClickListener(OnItemClickListener listener) {
         this.listener = listener;
     }
@@ -64,7 +64,7 @@ public class ExpiryItemAdapter extends RecyclerView.Adapter<ExpiryItemAdapter.Vi
 
         holder.itemQuantityText.setText("Quantity: " + item.getQuantity() + " " + item.getUnit());
 
-        // Item එකක් Click කළ විට Event එක Trigger කිරීම
+        // Triggering an event when an item is clicked
         holder.itemView.setOnClickListener(v -> {
             int currentPosition = holder.getAdapterPosition();
             if (listener != null && currentPosition != RecyclerView.NO_POSITION) {
